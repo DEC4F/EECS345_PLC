@@ -47,45 +47,44 @@ Stanley
   ))
 
 ; 6. numparens takes a list and returns the number of pairs of parentheses 
-;TODO not done yet
 (define numparens
   (lambda (lst)
     (cond
-      ((null? lst) 1) 
-      ((pair? (car lst)) 1 + (numparens (car lst)) + (numparens (cdr lst))) 
-      (else 0 + (numparens (cdr lst))) ))) 
+      ((null? lst) 1)                                                      ; base case, list end, return 1 as the pren of the input list
+      ((pair? (car lst)) ( + (numparens (car lst)) (numparens (cdr lst)))) ; recursive case, add output of curr head to output of the rest
+      ((null? (car lst)) (+ 1 (numparens (cdr lst))))                      ; recursive case, add 1 to the output of the rest if head is a null list
+      (else (numparens (cdr lst))) )))                                     ; recursive case, check on the rest 
 
-; base case, list end, return 1 as the pren of the input list
-; recursive case, add 1 to the output of curr sublist and the rest
-; recursive case, add 0 to the output of the rest 
-
-; 7. dup* takes a list and duplicates all contents, including any sublists 
-;TODO not done yet
+; 7. dup* takes a list and duplicates all contents, including any sublists
 (define dup* 
   (lambda (lst) 
     (cond 
-      ((null? lst) '()) 
-      ((pair? car lst) (cons (list (dup* (car lst)) (dup* (car lst)) ) (dup* (cdr lst)))) 
-      (else (cons (list (car lst) (car lst)) (dup* (cdr lst)))) )))
-
-; base case, reached the list end
-; recursive case, dup the sublist itself and recursive dup its element and append to dup of rest
-; recursive case, dup curr head and append to result of the rest
+      ((null? lst) '())                                                                       ; base case, reached the list end
+      ((pair? (car lst)) (append (list (dup* (car lst)) (dup* (car lst)) ) (dup* (cdr lst)))) ; recursive case, recursively dup the sublist itself
+      (else (append (list (car lst) (car lst)) (dup* (cdr lst)))) )))                         ; recursive case, dup curr head and append to the rest
 
 ; 8. removedups* takes a list, that can contain sublists, and removes any atom that is the repeat of the atom that immediately precedes it in the same sublist
 (define removedups* 
   (lambda (lst) 
     (cond 
+      ((null? (cdr lst)) lst)
+      ((pair? (car lst)) (cons (removedups* (car lst)) (removedups* (cdr lst))))
+      ((eq? (car lst) (cadr lst)) (removedups* (cdr lst)))
+      (else (cons (car lst) (removedups* (cdr lst))))
     )))
+; (removedups* '(a a (b b b (d d) b ((d) d)) f (f f g)))
+; '(a (b (d) b ((d) d)) f (f f g))  something wrong with reached list end
 
 ; 9. split* takes a list, that can contain sublists, and returns a list containing two lists. The first list should contain the 1st, 3rd, 5th, ... elements, and the second list should contain the 2nd, 4th, 6th, ... elements. However, if any of these elements are also lists, these elements should be split as well.
 (define split* 
   (lambda (lst) 
     (cond 
+    
     )))
 
 ; 10. removedups** takes a list, that can contain sublists, and removes any element that, once repeated elements have been removed from it, is the repeat of any element (also once elements have been removed from it) that immediately precedes it in the same sublist
 (define removedups**
   (lambda (lst) 
     (cond 
+    
     )))
