@@ -92,27 +92,26 @@ Stanley
       ((eq? (car lst) (cadr lst)) (removedups* (cdr lst)))                       ; recursive case, dup found, remove the rest
       (else (cons (car lst) (removedups* (cdr lst)))) )))                        ; recursive case, dup not found, remove the rest
 
-#| 9. split* takes a list, that can contain sublists, and returns a list containing two lists. The first list should contain the 1st, 3rd, 5th, ... elements, and the second list should contain the 2nd, 4th, 6th, ... elements. However, if any of these elements are also lists, these elements should be split as well.
-   > (split* '(a b ((c d) e f g) (((h i) j k l (m n o p)))))
-   ((a ((((c) (d)) f) (e g))) (b ((((((h) (i)) k ((m o) (n p))) (j l))) ()))) |#
+; 9. split* takes a list, that can contain sublists, and returns a list containing two lists. The first list should contain the 1st, 3rd, 5th, ... elements, and the second list should contain the 2nd, 4th, 6th, ... elements. However, if any of these elements are also lists, these elements should be split as well.
 (define split* 
   (lambda (lst) 
     (cond
       ((null? lst) (list '() '()))
-      ((not (or (list? (car lst)) (list? (cadr lst))))
-        (list (cons (car lst) (car (split* (cddr lst)))) 
-              (cons (cadr lst) (cadr (split* (cddr lst))))))
       ((null? (cdr lst)) (list lst '()))
-      ((and (list? (car lst)) (not (list? (cadr lst)))) 
-        (list (cons (split* (car lst)) (car (split* (cddr lst))))
-              (cons (cadr lst) (cadr (split* (cddr lst)))) ))
-      ((and (not (list? (car lst))) (list? (cadr lst)))
-        (list (cons (car lst) (car (split* (cddr lst)))) 
-              (cons (split* (cadr lst)) (cadr (split* (cddr lst))))))
-      ((and (list? (car lst)) (list? (cadr lst)))
+      ((and (list? (car lst)) (list? (cadr lst)))                    ; both car and cadr are list
         (list (cons (split* (car lst)) (car (split* (cddr lst)))) 
               (cons (split* (cadr lst)) (cadr (split* (cddr lst))))))
+      ((and (list? (car lst)) (not (list? (cadr lst))))              ; car is list, cadr is atom
+        (list (cons (split* (car lst)) (car (split* (cddr lst))))
+              (cons (cadr lst) (cadr (split* (cddr lst)))) ))
+      ((and (not (list? (car lst))) (list? (cadr lst)))              ; car is atom, cadr is list
+        (list (cons (car lst) (car (split* (cddr lst)))) 
+              (cons (split* (cadr lst)) (cadr (split* (cddr lst))))))
+      (else (list (cons (car lst) (car (split* (cddr lst))))         ; both car and cadr are atom
+              (cons (cadr lst) (cadr (split* (cddr lst))))))
     )))
+(split* '(a b ((c d) e f g) (((h i) j k l (m n o p)))))
+;((a ((((c) (d)) f) (e g))) (b ((((((h) (i)) k ((m o) (n p))) (j l))) ())))
 
 #| 10. removedups** takes a list, that can contain sublists, and removes any element that, once repeated elements have been removed from it, is the repeat of any element (also once elements have been removed from it) that immediately precedes it in the same sublist
    > (removedups** '(x x (a a b) (a b b) c c))
