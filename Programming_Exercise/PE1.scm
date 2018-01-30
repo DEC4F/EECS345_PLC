@@ -121,7 +121,7 @@ Stanley
    ((a (b (c)))) |#
 (define removedups**
   (lambda (lst)
-    (removedups**-ihelper 1 (removedups* lst)) ))
+    (removedups**-ihelper 1 (removedups* lst)) ))                                     ; can be improved, output is independent of counter size
 
 (define removedups**-ihelper                                                          ; a iterative helper function
   (lambda (counter lst)                                                               ; counter keep tracks of level of iteration
