@@ -75,11 +75,10 @@ Stanley
   (lambda (lst) 
     (cond 
       ((null? lst) '())                                                                     ; base case, reached the list end
-      ((list? (car lst)) (cons (list (dup* (car lst)) (dup* (car lst)) ) (dup* (cdr lst)))) ; recursive case, recursively dup the sublist itself
-      (else (cons (list (car lst) (car lst)) (dup* (cdr lst)))) )))                         ; recursive case, dup curr head and append to the rest
+      ((list? (car lst)) (cons (dup* (car lst)) (cons  (dup* (car lst)) (dup* (cdr lst))))) ; recursive case, recursively dup the sublist itself
+      (else (cons (car lst) (cons  (car lst) (dup* (cdr lst))))) )))                        ; recursive case, dup curr head and append to the rest
 
 ; (equal? (dup* '(1 2 (3 4) 5)) '(1 1 2 2 (3 3 4 4) (3 3 4 4) 5 5))
-(dup* '(1 2 (3 4) 5))
 
 ; 8. removedups* takes a list, that can contain sublists, and removes any atom that is the repeat of the atom that immediately precedes it in the same sublist
 (define removedups* 
@@ -124,10 +123,14 @@ Stanley
 (define removedups**-ihelper                                                          ; a iterative helper function
   (lambda (counter lst)                                                               ; counter keep tracks of level of iteration
     (cond
-      ((zero? counter) (cons lst '()))                                                           ; base case, return list when iteration ends
+      ((zero? counter) lst)                                                           ; base case, return list when iteration ends
+      ;((null? lst) ((list lst '(()))))
       ((list? (car lst)) (removedups**-ihelper (- counter 1) (removedups (car lst)))) ; recursive case, if head's a list
       (else (removedups**-ihelper (- counter 1) (removedups lst))) )))                ; recursive case, if head is an atom
 
 ; (equal? (removedups** '(x x (a a b) (a b b) c c)) '(x (a b) c))
 ; (equal? (removedups** '((a a (b b b (c))) (a (b (c c)) (b b b (c))))) '((a (b (c)))))
+(removedups** '(x x (a a b) (a b b) c c))
+; (x (a b) c)
 (removedups** '((a a (b b b (c))) (a (b (c c)) (b b b (c)))))
+; ((a (b (c))))
