@@ -97,21 +97,21 @@ Stanley
   (lambda (lst) 
     (cond
       ((null? lst) (list '() '()))
-      ((null? (cdr lst)) (if (list? (car lst))
-                            (cons (cons (split* (car lst)) '()) '(()))
-                            (list lst '())))
+      ((and (null? (cdr lst)) (list? (car lst)) )                    ; only one sublist in current list
+        (cons (cons (split* (car lst)) '()) '(())))
+      ((null? (cdr lst))                                             ; only one atom in current list
+        (list lst '()))
       ((and (list? (car lst)) (list? (cadr lst)))                    ; both car and cadr are list
         (list (cons (split* (car lst)) (car (split* (cddr lst)))) 
               (cons (split* (cadr lst)) (cadr (split* (cddr lst))))))
-      ((and (list? (car lst)) (not (list? (cadr lst))))              ; car is list, cadr is atom
+      ((list? (car lst))                                             ; car is list, cadr is atom
         (list (cons (split* (car lst)) (car (split* (cddr lst))))
               (cons (cadr lst) (cadr (split* (cddr lst)))) ))
-      ((and (not (list? (car lst))) (list? (cadr lst)))              ; car is atom, cadr is list
+      ((list? (cadr lst))                                            ; car is atom, cadr is list
         (list (cons (car lst) (car (split* (cddr lst)))) 
               (cons (split* (cadr lst)) (cadr (split* (cddr lst))))))
       (else (list (cons (car lst) (car (split* (cddr lst))))         ; both car and cadr are atom
-              (cons (cadr lst) (cadr (split* (cddr lst))))))
-    )))
+              (cons (cadr lst) (cadr (split* (cddr lst)))))) )))
 
 ; (equal? (split* '(a b ((c d) e f g) (((h i) j k l (m n o p))))) '((a ((((c) (d)) f) (e g))) (b ((((((h) (i)) k ((m o) (n p))) (j l))) ()))))
 
@@ -120,21 +120,21 @@ Stanley
   (lambda (lst)
     (cond
       ((null? lst) '())
-      ((and (null? (cdr lst)) (list? (car lst))) 
+      ((and (null? (cdr lst)) (list? (car lst)))                        ; only one sublist in current list
         (cons (removedups** (car lst)) '()))
-      ((null? (cdr lst))
+      ((null? (cdr lst))                                                ; only one atom in current list
         lst)
-      ((and (and (list? (car lst)) (list? (cadr lst))) (equal? (removedups** (car lst)) (removedups**(cadr lst)))) 
+      ((and (and (list? (car lst)) (list? (cadr lst))) 
+            (equal? (removedups** (car lst)) (removedups**(cadr lst)))) ; car and cadr are the same sublist after removed inner dup element
         (removedups** (cdr lst)))
-      ((and (list? (car lst)) (list? (cadr lst)))
+      ((and (list? (car lst)) (list? (cadr lst)))                       ; car and cdr are diff sublist after removed inner dup element
         (cons (cons (removedups** (car lst)) (removedups** (cadr lst))) (removedups** (cddr lst))))
-      ((list? (car lst)) 
+      ((list? (car lst))                                                ; car is a sublist
         (cons (removedups** (car lst)) (removedups** (cdr lst))))
-      ((equal? (car lst) (cadr lst))
+      ((equal? (car lst) (cadr lst))                                    ; car and cadr are the same atom
          (removedups** (cdr lst)))
-      (else
-        (cons (car lst) (removedups** (cdr lst))))
-    )))
+      (else                                                             ; car and cadr are diff atom
+        (cons (car lst) (removedups** (cdr lst)))) )))
 
 ; (equal? (removedups** '(x x (a a b) (a b b) c c)) '(x (a b) c))
 ; (equal? (removedups** '((a a (b b b (c))) (a (b (c c)) (b b b (c))))) '((a (b (c)))))
