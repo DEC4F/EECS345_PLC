@@ -50,3 +50,19 @@ Stanley
 
 ; (equal? (removedups '(a a b b b c c a b b)) '(a b c a b))
 
+; numparens takes a list and returns the number of pairs of parentheses 
+(define numparens
+  (lambda (lst)
+    (numparens-cps lst (lambda (v) v)) ))
+
+(define numparens-cps
+  (lambda (lst return)
+    (cond 
+      ((null? lst) (return 1))
+      ((list? (car lst)) ())
+    )
+  )
+)
+
+(numparens '(1 2 3))
+(numparens '(1 () (()) (2 3 (4)))
