@@ -90,7 +90,6 @@ Stanley
 ; 7. mergesort takes a list of numbers and returns a sorted version. If you recall the merge sort algorithm, you use the CPS version of split from lecture to divide the input list into two lists, you recursively call mergesort on each sublist, and then you call merge on the two lists returned by the recursive calls to mergesort. 
 ; (equal? (mergesort '())'())
 ; (equal? (mergesort '(8 1 3 9 6 5 7 2 4 10)) '(1 2 3 4 5 6 7 8 9 10))
-
 (define mergesort
   (lambda (lst)
     (mergesort-cps lst (lambda (v) v))))
@@ -117,15 +116,16 @@ Stanley
 
 (define replaceatoms
   (lambda (lst1 lst2)
-    (replaceatoms-cps lst1 lst2 (lambda (v) v))
+    (replaceatoms-cps lst1 lst2 (lambda (v1 v2) v1))
   )
 )
 
 (define replaceatoms-cps
   (lambda (lst1 lst2 return)
     (cond 
-      (predicate1 consequent1)
-      ((list? (car lst1)) (replaceatoms-cps (car lst1) lst2 (lambda (v1) (replaceatoms-cps (cdr lst1) (cdr lst2) (lambda (v2) (return (cons v1 v2)))))))
+      ((or (null? lst1) (null? lst2)) (return lst1 lst2))
+      ((list? (car lst1)) (replaceatoms-cps (car lst1) lst2 (lambda (v1 v2) (replaceatoms-cps (cdr lst1) v2 (lambda (v3 v4) (return (cons v1 v3) v4))))))
+      (else (replaceatoms-cps (cdr lst1) (cdr lst2) (lambda (v5 v6) (return (cons (car lst1) v5) v6))))
     )
   )
 )
