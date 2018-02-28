@@ -4,6 +4,7 @@ Stanley
 |#
 
 ; 1. insert takes a number and a list of numbers in order and inserts the number in the proper place
+; (equal? (insert 7 '(1 4 5 6 9 10)) '(1 4 5 6 7 9 10))
 (define insert 
   (lambda (x lst)
     (cond 
@@ -11,9 +12,8 @@ Stanley
       ((<= x (car lst)) (cons x lst))                  ; match case, x less than current head
       (else (cons (car lst) (insert x (cdr lst)) ))))) ; recursive case
 
-; (equal? (insert 7 '(1 4 5 6 9 10)) '(1 4 5 6 7 9 10))
-
 ; 2. merge takes two lists of numbers that are in order and returns a list that contains the combination of both lists in order.
+; (equal? (merge '(3 5 6 7 9) '(0 1 2 4 6 8 9 10)) '(0 1 2 3 4 5 6 6 7 8 9 9 10))
 (define merge
   (lambda (lst1 lst2)
     (cond
@@ -22,9 +22,8 @@ Stanley
       ((<= (car lst1) (car lst2)) (cons (car lst1) (merge (cdr lst1) lst2)))     ; recursive case, choose head of lst1 if its smaller
       ((>  (car lst1) (car lst2)) (cons (car lst2) (merge lst1 (cdr lst2)))) ))) ; the other recursive case
 
-; (equal? (merge '(3 5 6 7 9) '(0 1 2 4 6 8 9 10)) '(0 1 2 3 4 5 6 6 7 8 9 9 10))
-
 ; 3. removedups takes a list of atoms and removes any atom that is a repeat of the atom that immediately precedes it 
+; (equal? (removedups '(a a b b b c c a b b)) '(a b c a b))
 (define removedups
   (lambda (lst)
     (cond 
@@ -32,9 +31,11 @@ Stanley
       ((equal? (car lst) (cadr lst)) (removedups (cdr lst))) ; recursive case, call removedups on next list if current head = next head
       (else (cons (car lst) (removedups (cdr lst)))) )))     ; recursive case, append head to what's returned by calling removedups on next list
 
-; (equal? (removedups '(a a b b b c c a b b)) '(a b c a b))
-
 ; 4. split h a list of atoms and returns a list that contains two lists of atoms. The first list should contain the 1st, 3rd, 5th, ... atoms, and the second list should contain the 2nd, 4th, 6th, ... atoms. 
+; (equal? (split '()) '(() ()))
+; (equal? (split '(a)) '((a) ()))
+; (equal? (split '(a b c d)) '((a c) (b d)))
+; (equal? (split '(a b c d e)) '((a c e) (b d)))
 (define split
   (lambda (lst)
     (if (or (null? lst) (null? (cdr lst)))                   ; if either current list is null or only contain 1 element
@@ -42,12 +43,10 @@ Stanley
       (list (cons (car lst) (car (split (cddr lst))))        ; recursive step, append the head to the head of next next element returned
             (cons (cadr lst) (cadr (split (cddr lst)))) )))) ; recursive case, append the next head to the next head of element returned
 
-; (equal? (split '()) '(() ()))
-; (equal? (split '(a)) '((a) ()))
-; (equal? (split '(a b c d)) '((a c) (b d)))
-; (equal? (split '(a b c d e)) '((a c e) (b d)))
-
 ; 5. deepcons takes an element and a list, that possibly containst sublists and places the element in the front of the first element, as deep in the sublist as needed
+; (equal? (deepcons 'a '(((b c) d (e f)) g)) '(((a b c) d (e f)) g))
+; (equal? (deepcons 'a '(b ((c) d (e f)))) '(a b ((c) d (e f))))
+; (equal? (deepcons 'a '(() ())) '((a) ()))
 (define deepcons
   (lambda (x lst)
     (cond
@@ -55,11 +54,9 @@ Stanley
       ((list? (car lst)) (cons (deepcons x (car lst)) (cdr lst))) ; recursive case, append result of deepcons of x and curr head (sublist) with rest
       (else (cons x lst)) )))                                     ; base case, append x to the list
 
-; (equal? (deepcons 'a '(((b c) d (e f)) g)) '(((a b c) d (e f)) g))
-; (equal? (deepcons 'a '(b ((c) d (e f)))) '(a b ((c) d (e f))))
-; (equal? (deepcons 'a '(() ())) '((a) ()))
-
 ; 6. numparens takes a list and returns the number of pairs of parentheses 
+; (equal? (numparens '(1 2 3)) 1)
+; (equal? (numparens '(1 () (()) (2 3 (4)))) 6)
 (define numparens
   (lambda (lst)
     (cond
@@ -67,20 +64,17 @@ Stanley
       ((list? (car lst)) ( + (numparens (car lst)) (numparens (cdr lst)))) ; recursive case, add output of curr head to output of the rest
       (else (numparens (cdr lst))) )))                                     ; recursive case, check on the rest 
 
-; (equal? (numparens '(1 2 3)) 1)
-; (equal? (numparens '(1 () (()) (2 3 (4)))) 6)
-
 ; 7. dup* takes a list and duplicates all contents, including any sublists
+; (equal? (dup* '(1 2 (3 4) 5)) '(1 1 2 2 (3 3 4 4) (3 3 4 4) 5 5))
 (define dup* 
   (lambda (lst) 
     (cond 
       ((null? lst) '())                                                                     ; base case, reached the list end
-      ((list? (car lst)) (cons (dup* (car lst)) (cons  (dup* (car lst)) (dup* (cdr lst))))) ; recursive case, recursively dup the sublist itself
+      ((list? (car lst)) (cons (dup* (car lst)) (cons (dup* (car lst)) (dup* (cdr lst))))) ; recursive case, recursively dup the sublist itself
       (else (cons (car lst) (cons  (car lst) (dup* (cdr lst))))) )))                        ; recursive case, dup curr head and append to the rest
 
-; (equal? (dup* '(1 2 (3 4) 5)) '(1 1 2 2 (3 3 4 4) (3 3 4 4) 5 5))
-
 ; 8. removedups* takes a list, that can contain sublists, and removes any atom that is the repeat of the atom that immediately precedes it in the same sublist
+; (equal? (removedups* '(a a (b b b (d d) b ((d) d)) f (f f g))) '(a (b (d) b ((d) d)) f (f g)))
 (define removedups* 
   (lambda (lst) 
     (cond 
@@ -90,9 +84,8 @@ Stanley
       ((eq? (car lst) (cadr lst)) (removedups* (cdr lst)))                       ; recursive case, dup found, remove the rest
       (else (cons (car lst) (removedups* (cdr lst)))) )))                        ; recursive case, dup not found, remove the rest
 
-; (equal? (removedups* '(a a (b b b (d d) b ((d) d)) f (f f g))) '(a (b (d) b ((d) d)) f (f g)))
-
 ; 9. split* takes a list, that can contain sublists, and returns a list containing two lists. The first list should contain the 1st, 3rd, 5th, ... elements, and the second list should contain the 2nd, 4th, 6th, ... elements. However, if any of these elements are also lists, these elements should be split as well.
+; (equal? (split* '(a b ((c d) e f g) (((h i) j k l (m n o p))))) '((a ((((c) (d)) f) (e g))) (b ((((((h) (i)) k ((m o) (n p))) (j l))) ()))))
 (define split* 
   (lambda (lst) 
     (cond
@@ -113,9 +106,9 @@ Stanley
       (else (list (cons (car lst) (car (split* (cddr lst))))         ; both car and cadr are atom
               (cons (cadr lst) (cadr (split* (cddr lst)))))) )))
 
-; (equal? (split* '(a b ((c d) e f g) (((h i) j k l (m n o p))))) '((a ((((c) (d)) f) (e g))) (b ((((((h) (i)) k ((m o) (n p))) (j l))) ()))))
-
 ; 10. removedups** takes a list, that can contain sublists, and removes any element that, once repeated elements have been removed from it, is the repeat of any element (also once elements have been removed from it) that immediately precedes it in the same sublist 
+; (equal? (removedups** '(x x (a a b) (a b b) c c)) '(x (a b) c))
+; (equal? (removedups** '((a a (b b b (c))) (a (b (c c)) (b b b (c))))) '((a (b (c)))))
 (define removedups**
   (lambda (lst)
     (cond
@@ -135,6 +128,3 @@ Stanley
          (removedups** (cdr lst)))
       (else                                                             ; car and cadr are diff atom
         (cons (car lst) (removedups** (cdr lst)))) )))
-
-; (equal? (removedups** '(x x (a a b) (a b b) c c)) '(x (a b) c))
-; (equal? (removedups** '((a a (b b b (c))) (a (b (c c)) (b b b (c))))) '((a (b (c)))))
