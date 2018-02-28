@@ -88,8 +88,8 @@ Stanley
       (else (removedups*-cps (cdr lst) (lambda (v) (return (cons (car lst) v))))) )))
 
 ; 7. mergesort takes a list of numbers and returns a sorted version. If you recall the merge sort algorithm, you use the CPS version of split from lecture to divide the input list into two lists, you recursively call mergesort on each sublist, and then you call merge on the two lists returned by the recursive calls to mergesort. 
-(equal? (mergesort '())'())
-(equal? (mergesort '(8 1 3 9 6 5 7 2 4 10)) '(1 2 3 4 5 6 7 8 9 10))
+; (equal? (mergesort '())'())
+; (equal? (mergesort '(8 1 3 9 6 5 7 2 4 10)) '(1 2 3 4 5 6 7 8 9 10))
 
 (define mergesort
   (lambda (lst)
@@ -98,11 +98,18 @@ Stanley
 (define mergesort-cps
   (lambda (lst return)
     (cond 
-      (predicate1 consequent1)
-      (predicate2 consequent2)
-    )
-  )
-)
+      ((null? lst) (return '()))
+      ((null? (cdr lst)) (return lst))
+      (else (merge 
+              (mergesort-cps (car (split-cps lst (lambda (v1 v2) (list v1 v2)))) (lambda (v3) v3)) 
+              (mergesort-cps (cadr (split-cps lst (lambda (v4 v5) (list v4 v5)))) (lambda (v6) v6)))) )))
+
+(define split-cps
+  (lambda (lst return)
+    (cond
+      ((null? lst) (return '() '()))
+      ((null? (cdr lst)) (return lst '()))
+      (else (split-cps (cddr lst) (lambda (v1 v2) (return (cons (car lst) v1) (cons (cadr lst) v2))))) )))
 
 ; 8. replaceatoms takes two lists. The first list can contain sublists, but the second list is a single list of atoms. The output should be the first list, but each atom of the first list, from left to right, is replaced by the corresponding atom of the second list, until the second list runs out of atoms. 
 (equal? (replaceatoms '((a ((b) c d) ((((e) f g) (h i)) j (k l))) m n (o p)) '(z y x w v u t s r q p o n m l k j)) '((z ((y) x w) ((((v) u t) (s r)) q (p o))) n m (l k)))
@@ -118,7 +125,7 @@ Stanley
   (lambda (lst1 lst2 return)
     (cond 
       (predicate1 consequent1)
-      (predicate2 consequent2)
+      ((list? (car lst1)) (replaceatoms-cps (car lst1) lst2 (lambda (v1) (replaceatoms-cps (cdr lst1) (cdr lst2) (lambda (v2) (return (cons v1 v2)))))))
     )
   )
 )
@@ -129,13 +136,17 @@ Stanley
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(define call/cc call-with-current-continuation)
+
 ; 9. suffix takes an atom and a list and returns a list containing all elements that occur after the last occurrence of the atom. 
 (equal? (suffix 'x '(a b c))  '(a b c))
 (equal? (suffix 'x '(a b x c d x e f)) '(e f))
 
 (define suffix
   (lambda (atm lst)
-    body
+    ((null? lst) (break '())
+    ((eq? atm (car lst)) ())
+    (else ())
   )
 )
 
