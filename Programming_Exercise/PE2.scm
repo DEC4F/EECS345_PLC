@@ -87,10 +87,10 @@ Stanley
       ((eq? (car lst) (cadr lst)) (removedups*-cps (cdr lst) return))
       (else (removedups*-cps (cdr lst) (lambda (v) (return (cons (car lst) v))))) )))
 
-; 7. mergesort takes a list of numbers and returns a sorted version. If you recall the merge sort algorithm, you use the CPS version of split from lecture to divide the input list into two lists, you recursively call mergesort on each sublist, and then you call merge on the two lists returned by the recursive calls to mergesort. 
-; (equal? (mergesort '())'())
-; (equal? (mergesort '(8 1 3 9 6 5 7 2 4 10)) '(1 2 3 4 5 6 7 8 9 10))
-(define mergesort
+; 7. merge-sort takes a list of numbers and returns a sorted version. If you recall the merge sort algorithm, you use the CPS version of split from lecture to divide the input list into two lists, you recursively call merge-sort on each sublist, and then you call merge on the two lists returned by the recursive calls to merge-sort. 
+; (equal? (merge-sort '())'())
+; (equal? (merge-sort '(8 1 3 9 6 5 7 2 4 10)) '(1 2 3 4 5 6 7 8 9 10))
+(define merge-sort
   (lambda (lst)
     (mergesort-cps lst (lambda (v) v))))
 
@@ -111,24 +111,21 @@ Stanley
       (else (split-cps (cddr lst) (lambda (v1 v2) (return (cons (car lst) v1) (cons (cadr lst) v2))))) )))
 
 ; 8. replaceatoms takes two lists. The first list can contain sublists, but the second list is a single list of atoms. The output should be the first list, but each atom of the first list, from left to right, is replaced by the corresponding atom of the second list, until the second list runs out of atoms. 
-(equal? (replaceatoms '((a ((b) c d) ((((e) f g) (h i)) j (k l))) m n (o p)) '(z y x w v u t s r q p o n m l k j)) '((z ((y) x w) ((((v) u t) (s r)) q (p o))) n m (l k)))
-(equal? (replaceatoms '((a ((b) c d) ((((e) f g) (h i)) j (k l))) m n (o p)) '(z y x w v u)) '((z ((y) x w) ((((v) u g) (h i)) j (k l))) m n (o p)))
+; (equal? (replaceatoms '((a ((b) c d) ((((e) f g) (h i)) j (k l))) m n (o p)) '(z y x w v u t s r q p o n m l k j)) '((z ((y) x w) ((((v) u t) (s r)) q (p o))) n m (l k)))
+; (equal? (replaceatoms '((a ((b) c d) ((((e) f g) (h i)) j (k l))) m n (o p)) '(z y x w v u)) '((z ((y) x w) ((((v) u g) (h i)) j (k l))) m n (o p)))
 
 (define replaceatoms
   (lambda (lst1 lst2)
-    (replaceatoms-cps lst1 lst2 (lambda (v1 v2) v1))
-  )
-)
+    (replaceatoms-cps lst1 lst2 (lambda (v1 v2) v1)) ))
 
 (define replaceatoms-cps
   (lambda (lst1 lst2 return)
     (cond 
       ((or (null? lst1) (null? lst2)) (return lst1 lst2))
-      ((list? (car lst1)) (replaceatoms-cps (car lst1) lst2 (lambda (v1 v2) (replaceatoms-cps (cdr lst1) v2 (lambda (v3 v4) (return (cons v1 v3) v4))))))
-      (else (replaceatoms-cps (cdr lst1) (cdr lst2) (lambda (v5 v6) (return (cons (car lst1) v5) v6))))
-    )
-  )
-)
+      ((list? (car lst1)) 
+        (replaceatoms-cps (car lst1) lst2 (lambda (v1 v2) (replaceatoms-cps (cdr lst1) v2 (lambda (v3 v4) (return (cons v1 v3) v4))))))
+      (else 
+        (replaceatoms-cps (cdr lst1) (cdr lst2) (lambda (v5 v6) (return (cons (car lst2) v5) v6)))) )))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -136,27 +133,40 @@ Stanley
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(define call/cc call-with-current-continuation)
-
 ; 9. suffix takes an atom and a list and returns a list containing all elements that occur after the last occurrence of the atom. 
-(equal? (suffix 'x '(a b c))  '(a b c))
-(equal? (suffix 'x '(a b x c d x e f)) '(e f))
-
+; (equal? (suffix 'x '(a b c))  '(a b c))
+; (equal? (suffix 'x '(a b x c d x e f)) '(e f))
 (define suffix
   (lambda (atm lst)
-    ((null? lst) (break '())
-    ((eq? atm (car lst)) ())
-    (else ())
-  )
-)
+    (call/cc
+      (lambda (break)
+        (suffix-helper atm lst break) ))))
+
+(define suffix-helper
+  (lambda (atm lst break)
+    (cond 
+          ((null? lst) '())
+          ((eq? atm (car lst)) (break (suffix-helper atm (cdr lst) break)))
+          (else (cons (car lst) (suffix-helper atm (cdr lst) break))) )))
 
 ; 10. emptysublists takes an atom and a list containing sublists. The output list should be the same as the input list except that any sublist (including the main list) that contains the given atom should be emptied of all elements. 
-(equal? (emptysublists 'x '((a b c) (d e x g) (((h i) x) j k ((l m x o))))) '((a b c) () (() j k (()))) )
-(equal? (emptysublists 'x '((a b c) (d e x g) (((h i) x) j k ((l m x o) x)))) '((a b c) () (() j k ())))
-(equal? (emptysublists 'x '((a b c) (d e x g) x (((h i) x) j k ((l m x o))))) '())
+; (equal? (emptysublists 'x '((a b c) (d e x g) (((h i) x) j k ((l m x o))))) '((a b c) () (() j k (()))) )
+; (equal? (emptysublists 'x '((a b c) (d e x g) (((h i) x) j k ((l m x o) x)))) '((a b c) () (() j k ())))
+; (equal? (emptysublists 'x '((a b c) (d e x g) x (((h i) x) j k ((l m x o))))) '())
 
 (define emptysublists
   (lambda (atm lst)
-    body
-  )
-)
+    (call/cc
+      (lambda (break)
+        (emptysublists-helper atm lst break) ))))
+
+(define emptysublists-helper
+  (lambda (atm lst break)
+    (cond 
+          ((null? lst) '())
+          ((list? (car lst)) 
+            ; cons break of car list to the break of cdr list so when there's a match element and '() was "breaked", it won't affect other sublist
+            (cons (call/cc (lambda (break2) (emptysublists-helper atm (car lst) break2)))
+                  (emptysublists-helper atm (cdr lst) break)))  
+          ((eq? atm (car lst)) (break '()))
+          (else (cons (car lst) (emptysublists-helper atm (cdr lst) break))) )))
