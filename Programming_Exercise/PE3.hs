@@ -38,16 +38,6 @@ bubbledown (Internal a l r)
   | a > l && a < r = (Internal l (bubbledown a) (bubbledown r)) -- l < a < r
   | a > r && a < l = (Internal r (bubbledown l) (bubbledown a)) -- r < a < l
   | otherwise      = (Internal a (bubbledown l) (bubbledown r)) -- a is smallest
-bubbledown t
-  | isLeaf t  = bubbledown t
-  | otherwise = bubbledown (Internal (getParent t) (getLeft t) (getRight t))
-
--- helpers
-isLeaf (Leaf a) = True
-isLeaf _        = False
-getLeft (Internal a l r)   = l
-getParent (Internal a l r) = a
-getRight (Internal a l r)  = r
 
 {- 6. Using the Maybe monad of Haskell, create a function called checkcons that has the following type. The function takes a Maybe value of some type, a Maybe list of the same type (as a monad), and a test function and returns a Maybe list of the same type. If either Maybe is Nothing, the result is Nothing. If the first Maybe value passes the test function, the result has the first element cons'd onto the front of the list. Otherwise the result is Nothing. -}
 checkcons :: Maybe a -> Maybe [a] -> (a -> Bool) -> Maybe [a]
