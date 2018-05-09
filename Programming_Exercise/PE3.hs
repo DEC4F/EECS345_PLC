@@ -1,5 +1,6 @@
 {- 1. takes a lis-t and removes duplicate elements. -}
 removedups :: [Int] -> [Int]
+removedups []  = []
 removedups [a] = [a]
 removedups lst
   | head lst == (head.tail) lst = removedups (tail lst)
@@ -7,6 +8,7 @@ removedups lst
 
 {- 2. Create a continuation passing version, removedups-cps -}
 removedups_cps :: [Int] -> ([Int] -> p) -> p
+removedups_cps [] return  = return []
 removedups_cps [a] return = return [a]
 removedups_cps lst return
   | head lst == (head.tail) lst = removedups_cps (tail lst) return
@@ -27,17 +29,22 @@ gremovedups [Sublist a] = [Sublist (gremovedups a)]
 gremovedups lst
   | head lst == head (tail lst) = gremovedups (tail lst)
   | otherwise                   = gremovedups ([(head lst)]) ++ (gremovedups (tail lst))
- 
+
 {- 5. Using the Tree type created in class (use a version without lists), write a function bubbledown that takes a Tree as input. If the element stored in the root is larger than either children, swap the element with the smaller child, and recurse on the child you swapped the element with. The recursion should stop when either you reach a leaf or when the element of the node is smaller than both its children. -}
 data Tree t = Leaf t | Internal t (Tree t) (Tree t) deriving (Show)
+
+value (Leaf a) = a
+value (Internal a l r) = a
+
+setvalue a (Leaf _) = Leaf a
+setvalue a (Internal _ l r) = Internal a l r
+
 bubbledown :: (Tree a) -> (Tree a)
 bubbledown (Leaf a) = Leaf a
 bubbledown (Internal a l r)
-  | a > l && r > l = (Internal l (bubbledown a) (bubbledown r)) -- l is smallest
-  | a > r && l > r = (Internal r (bubbledown l) (bubbledown a)) -- r is smallest
-  | a > l && a < r = (Internal l (bubbledown a) (bubbledown r)) -- l < a < r
-  | a > r && a < l = (Internal r (bubbledown l) (bubbledown a)) -- r < a < l
-  | otherwise      = (Internal a (bubbledown l) (bubbledown r)) -- a is smallest
+  | a > value l && value r > value l = (Internal (value l) (bubbledown (setvalue a l)) r) -- l is smallest
+  | a > value r && value l > value r = (Internal (value r) l (bubbledown (setvalue a r))) -- r is smallest
+  | otherwise                        = (Internal a l r) -- a is smallest
 
 {- 6. Using the Maybe monad of Haskell, create a function called checkcons that has the following type. The function takes a Maybe value of some type, a Maybe list of the same type (as a monad), and a test function and returns a Maybe list of the same type. If either Maybe is Nothing, the result is Nothing. If the first Maybe value passes the test function, the result has the first element cons'd onto the front of the list. Otherwise the result is Nothing. -}
 checkcons :: Maybe a -> Maybe [a] -> (a -> Bool) -> Maybe [a]
@@ -62,8 +69,8 @@ lreturn a = Pair a Null
 
 lbind :: List a -> (a -> List a1) -> List a1
 lbind Null _          = Null
-lbind (Pair a Null) f = (f a)
 lbind (Pair a l) f    = lcons (f a) (lbind l f)
 
 -- helper method that get rid of the extra Null
-lcons (Pair a b) (Pair c d) = Pair a (Pair c d)
+lcons Null b = b
+lcons (Pair a b) (Pair c d) = Pair a (lcons c d)
